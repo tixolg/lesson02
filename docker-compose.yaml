@@ -1,0 +1,53 @@
+version: "3.9"  
+
+x-shared-volume:
+  &shared-volume
+  type: bind
+  source: /home/vagrant/index.html
+
+services:
+  app1:
+    image: localhost:5000/app1 
+    build: .
+    ports:
+      - "81:81"
+    volumes:
+      - << : *shared-volume
+        target: /usr/local/apache2/htdocs/index.html
+    networks:
+      - source1
+    cpu_count: 2
+
+    mem_limit: 1000000000
+    memswap_limit: 2000000000
+    mem_reservation: 512m
+    privileged: true
+
+  app2:
+    image: localhost:5000/app2 
+    build: .
+    ports:
+      - "82:82"
+    volumes:
+      - << : *shared-volume
+        target: /usr/share/nginx/html/index.html
+    networks:
+      - source2
+    cpu_count: 2
+
+    mem_limit: 1000000000
+    memswap_limit: 2000000000
+    mem_reservation: 512m
+    privileged: true
+  
+networks:
+    source1:
+      ipam:
+        driver: default
+        config:
+          - subnet: 172.18.0.0/16
+    source2:
+      ipam:
+        driver: default
+        config:
+          - subnet: 172.19.0.0/16
